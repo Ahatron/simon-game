@@ -7,17 +7,21 @@
     </div>
     <div class="game-device">
       <button ref="blue"
+        :disabled="!interactive"
         class="game-device__btn top-left-btn"
-        @click="check"></button>
+        @click="check('blue')"></button>
       <button ref="red"
+        :disabled="!interactive"
         class="game-device__btn top-right-btn"
-        @click="check"></button>
+        @click="check('red')"></button>
       <button ref="yellow"
+        :disabled="!interactive"
         class="game-device__btn bottom-left-btn"
-        @click="check"></button>
+        @click="check('yellow')"></button>
       <button ref="green"
+        :disabled="!interactive"
         class="game-device__btn bottom-right-btn"
-        @click="check"></button>
+        @click="check('green')"></button>
     </div>
 
     <form @submit.prevent
@@ -25,7 +29,7 @@
       <h3>Сложность:</h3>
       <div>
         <div class="difficulty">
-          <input :disabled="!interactive"
+          <input :disabled="active"
             type="radio"
             id="easy"
             name="difficulty"
@@ -35,7 +39,7 @@
         </div>
 
         <div class="difficulty">
-          <input :disabled="!interactive"
+          <input :disabled="active"
             type="radio"
             id="medium"
             name="difficulty"
@@ -45,7 +49,7 @@
         </div>
 
         <div class="difficulty">
-          <input :disabled="!interactive"
+          <input :disabled="active"
             type="radio"
             id="hard"
             name="difficulty"
@@ -56,8 +60,24 @@
       </div>
       <button :disabled="!interactive"
         class="start-btn"
-        @click="startGame()">Старт</button>
+        @click="startGame(true)">Старт</button>
     </form>
+    <audio ref="blueSound">
+      <source src="./assets/blue.mp3"
+        type="audio/mpeg">
+    </audio>
+    <audio ref="redSound">
+      <source src="./assets/red.mp3"
+        type="audio/mpeg">
+    </audio>
+    <audio ref="greenSound">
+      <source src="./assets/green.mp3"
+        type="audio/mpeg">
+    </audio>
+    <audio ref="yellowSound">
+      <source src="./assets/yellow.mp3"
+        type="audio/mpeg">
+    </audio>
   </div>
 </template>
 
@@ -74,36 +94,59 @@ export default {
     }
   },
   methods: {
-    startGame() {
+    startGame(reset) {
+      if (reset) {
+        this.userSequence = []
+        this.sequence = []
+      }
+
       this.active = true
       this.interactive = false
-      const btnColors = ['red', 'green', 'blue', 'yellow'],
-        randomColor = btnColors[Math.floor(Math.random() * 4)]
+      const btnColors = ['red', 'green', 'blue', 'yellow']
 
-      this.sequence.push(randomColor)
+      let randomColor = btnColors[Math.floor(Math.random() * 4)];
+      this.sequence.push(randomColor);
 
-      const selectedBtn = this.$refs[randomColor]
-      setInterval(() => {
-
-        selectedBtn.classList.add('active-' + randomColor)
-
+      for (let i = 0; i < this.sequence.length; i++) {
+        const selectedBtn = this.$refs[this.sequence[i]];
         setTimeout(() => {
-          selectedBtn.classList.remove('active-' + randomColor)
-        }, this.delay);
-
-      }, this.delay);
-
-      this.interactive = true
-    },
-    check() {
-      for (let i = 0; i < this.userSequence.length; i++) {
-        console.log(this.userSequence[i] !== this.sequence[i])
-        if (this.userSequence[i] !== this.sequence[i]) this.active = false
-        else this.startGame()
+          selectedBtn.classList.add('active-' + this.sequence[i]);
+          this.playSound(this.sequence[i])
+          setTimeout(() => {
+            selectedBtn.classList.remove('active-' + this.sequence[i]);
+          }, this.delay / 2);
+        }, this.delay * i);
       }
+      setTimeout(() => this.interactive = true, this.delay * this.sequence.length)
+      this.userSequence = []
+    },
+    check(color) {
+      this.userSequence.push(color)
+      this.playSound(color)
+      for (let i = 0; i < this.userSequence.length; i++) {
+        if (this.userSequence[i] !== this.sequence[i]) {
+          this.active = false
+          this.userSequence = []
+          this.sequence = []
+
+          this.$refs.blue.classList.remove('active-blue')
+          this.$refs.red.classList.remove('active-red')
+          this.$refs.yellow.classList.remove('active-yellow')
+          this.$refs.green.classList.remove('active-green')
+        }
+      }
+      if (this.active && this.userSequence.length == this.sequence.length)
+        setTimeout(() => this.startGame(), 1000)
+    },
+    playSound(color) {
+      const audioElem = this.$refs[color + 'Sound']
+
+      audioElem.currentTime = 0
+      audioElem.play()
     }
-  }
+  },
 }
+
 </script>
 
 <style>
@@ -139,7 +182,7 @@ export default {
   margin-left: 3rem;
   border-radius: 1rem;
   color: #2c3e50;
-  transition: .2s;
+  transition: .1s;
 }
 
 .start-btn:hover {
@@ -184,9 +227,12 @@ export default {
 }
 
 .top-left-btn:active,
-.active-blue {
+.active-blue,
+.top-left-btn:hover.active-blue {
   background-color: rgb(0, 191, 255);
 }
+
+
 
 
 .top-right-btn {
@@ -199,7 +245,8 @@ export default {
 }
 
 .top-right-btn:active,
-.active-red {
+.active-red,
+.top-right-btn:hover.active-red {
   background-color: rgb(255, 0, 0);
 }
 
@@ -213,7 +260,8 @@ export default {
 }
 
 .bottom-right-btn:active,
-.active-green {
+.active-green,
+.bottom-right-btn:hover.active-green {
   background-color: rgb(41, 228, 41);
 }
 
@@ -228,7 +276,8 @@ export default {
 }
 
 .bottom-left-btn:active,
-.active-yellow {
+.active-yellow,
+.bottom-left-btn:hover.active-yellow {
   background-color: rgb(255, 255, 45);
 }
 </style>
