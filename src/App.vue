@@ -95,30 +95,32 @@ export default {
   },
   methods: {
     startGame(reset) {
-      if (reset) {
-        this.userSequence = []
-        this.sequence = []
-      }
+      setTimeout(() => {
+        if (reset) {
+          this.userSequence = []
+          this.sequence = []
+        }
 
-      this.active = true
-      this.interactive = false
-      const btnColors = ['red', 'green', 'blue', 'yellow']
+        this.active = true
+        this.interactive = false
+        const btnColors = ['red', 'green', 'blue', 'yellow']
 
-      let randomColor = btnColors[Math.floor(Math.random() * 4)];
-      this.sequence.push(randomColor);
+        let randomColor = btnColors[Math.floor(Math.random() * 4)];
+        this.sequence.push(randomColor);
 
-      for (let i = 0; i < this.sequence.length; i++) {
-        const selectedBtn = this.$refs[this.sequence[i]];
-        setTimeout(() => {
-          selectedBtn.classList.add('active-' + this.sequence[i]);
-          this.playSound(this.sequence[i])
+        for (let i = 0; i < this.sequence.length; i++) {
+          const selectedBtn = this.$refs[this.sequence[i]];
           setTimeout(() => {
-            selectedBtn.classList.remove('active-' + this.sequence[i]);
-          }, this.delay / 2);
-        }, this.delay * i);
-      }
-      setTimeout(() => this.interactive = true, this.delay * this.sequence.length)
-      this.userSequence = []
+            selectedBtn.classList.add('active-' + this.sequence[i]);
+            this.playSound(this.sequence[i])
+            setTimeout(() => {
+              selectedBtn.classList.remove('active-' + this.sequence[i]);
+            }, this.delay / 2);
+          }, this.delay * i);
+        }
+        setTimeout(() => this.interactive = true, this.delay * this.sequence.length)
+        this.userSequence = []
+      }, 500)
     },
     check(color) {
       this.userSequence.push(color)
@@ -136,7 +138,7 @@ export default {
         }
       }
       if (this.active && this.userSequence.length == this.sequence.length)
-        setTimeout(() => this.startGame(), 1000)
+        this.startGame()
     },
     playSound(color) {
       const audioElem = this.$refs[color + 'Sound']
