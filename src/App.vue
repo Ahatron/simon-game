@@ -29,7 +29,7 @@
       <h3>Сложность:</h3>
       <div>
         <div class="difficulty">
-          <input :disabled="active"
+          <input :disabled="isGameActive"
             type="radio"
             id="easy"
             name="difficulty"
@@ -39,7 +39,7 @@
         </div>
 
         <div class="difficulty">
-          <input :disabled="active"
+          <input :disabled="isGameActive"
             type="radio"
             id="medium"
             name="difficulty"
@@ -49,7 +49,7 @@
         </div>
 
         <div class="difficulty">
-          <input :disabled="active"
+          <input :disabled="isGameActive"
             type="radio"
             id="hard"
             name="difficulty"
@@ -90,24 +90,24 @@ export default {
       userSequence: [],
       delay: 1500,
       interactive: true,
-      active: false,
+      isGameActive: false,
     }
   },
   methods: {
-    startGame(reset) {
+    startGame(newGame) {
+      this.isGameActive = true
+      this.interactive = false
+      if (newGame) {
+        this.userSequence = []
+        this.sequence = []
+      }
+
+      const btnColors = ['red', 'green', 'blue', 'yellow']
+
+      let randomColor = btnColors[Math.floor(Math.random() * 4)];
+      this.sequence.push(randomColor);
+
       setTimeout(() => {
-        if (reset) {
-          this.userSequence = []
-          this.sequence = []
-        }
-
-        this.active = true
-        this.interactive = false
-        const btnColors = ['red', 'green', 'blue', 'yellow']
-
-        let randomColor = btnColors[Math.floor(Math.random() * 4)];
-        this.sequence.push(randomColor);
-
         for (let i = 0; i < this.sequence.length; i++) {
           const selectedBtn = this.$refs[this.sequence[i]];
           setTimeout(() => {
@@ -127,7 +127,7 @@ export default {
       this.playSound(color)
       for (let i = 0; i < this.userSequence.length; i++) {
         if (this.userSequence[i] !== this.sequence[i]) {
-          this.active = false
+          this.isGameActive = false
           this.userSequence = []
           this.sequence = []
 
@@ -137,8 +137,7 @@ export default {
           this.$refs.green.classList.remove('active-green')
         }
       }
-      if (this.active && this.userSequence.length == this.sequence.length)
-        this.startGame()
+      if (this.isGameActive && this.userSequence.length == this.sequence.length) this.startGame()
     },
     playSound(color) {
       const audioElem = this.$refs[color + 'Sound']
@@ -188,7 +187,11 @@ export default {
   transition: .1s;
 }
 
-.start-btn:hover {
+
+
+.start-btn:hover,
+.start-btn:disabled,
+.start-btn:active:disabled {
   background-color: rgb(0, 148, 148);
 }
 
@@ -220,7 +223,9 @@ export default {
   transition: .2s;
 }
 
-.top-left-btn {
+
+.top-left-btn,
+.top-left-btn:hover:disabled {
   border-top-left-radius: 100%;
   background-color: rgb(113, 181, 204);
 }
@@ -233,12 +238,13 @@ export default {
 .active-blue,
 .top-left-btn:hover.active-blue {
   background-color: rgb(0, 191, 255);
+  box-shadow: 0 0 10px rgb(0, 191, 255);
+  z-index: 1;
 }
 
 
-
-
-.top-right-btn {
+.top-right-btn,
+.top-right-btn:hover:disabled {
   border-top-right-radius: 100%;
   background-color: rgb(218, 106, 106);
 }
@@ -251,11 +257,16 @@ export default {
 .active-red,
 .top-right-btn:hover.active-red {
   background-color: rgb(255, 0, 0);
+  box-shadow: 0 0 10px rgb(255, 0, 0);
+  z-index: 1;
 }
 
-.bottom-right-btn {
+
+.bottom-right-btn,
+.bottom-right-btn:hover:disabled {
   border-bottom-right-radius: 100%;
-  background-color: rgb(101, 218, 101);
+  background-color: rgb(115, 228, 115);
+
 }
 
 .bottom-right-btn:hover {
@@ -266,10 +277,13 @@ export default {
 .active-green,
 .bottom-right-btn:hover.active-green {
   background-color: rgb(41, 228, 41);
+  box-shadow: 0 0 10px rgb(41, 228, 41);
+  z-index: 1;
 }
 
 
-.bottom-left-btn {
+.bottom-left-btn,
+.bottom-left-btn:hover:disabled {
   border-bottom-left-radius: 100%;
   background-color: rgb(224, 224, 112);
 }
@@ -282,5 +296,7 @@ export default {
 .active-yellow,
 .bottom-left-btn:hover.active-yellow {
   background-color: rgb(255, 255, 45);
+  box-shadow: 0 0 10px rgb(255, 255, 45);
+  z-index: 1;
 }
 </style>
